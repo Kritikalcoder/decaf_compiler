@@ -1,0 +1,25 @@
+class Program {
+	int A[10];
+	int size;
+
+	boolean linearSearch (int searchTerm) {
+		for i = 0, size {
+			if (A[i] == searchTerm) {
+				return true;
+			}
+		}
+		return false;
+	}
+	void main () {
+		int x;
+		boolean result;
+
+		size = 10;
+		for i = 0, size {
+			A[i] = i;
+		}
+		x = 1;
+		result = linearSearch(x);
+		callout("printf", "%d", result);
+	}
+}

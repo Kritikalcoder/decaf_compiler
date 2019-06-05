@@ -1,0 +1,99 @@
+class Program {
+	int arr[100];
+
+	void merge(int arr[], int l, int m, int r) 
+	{ 
+	    int i, j, k, temp; 
+	    int n1;
+	    int n2;
+	    int L[n1], R[n2]; 
+	    int sum;
+	    
+	    temp = 0;
+	    n1 = m - l + 1;
+	    n2 =  r - m;
+	  
+	    for i=0, n1 {
+	        L[i] = arr[l + i]; 
+	    }
+	    for j=0, n2 {
+	        R[j] = arr[m + 1 + j]; 
+	    }
+	  
+	    i = 0; // Initial index of first subarray 
+	    j = 0; // Initial index of second subarray 
+	    k = l; // Initial index of merged subarray 
+	    sum = n1 + n2;
+	    for temp = 0, sum {
+	   
+	        if (L[i] <= R[j]) 
+	        { 
+	            arr[k] = L[i]; 
+	            i += 1; 
+	        } 
+
+	        else
+	        { 
+	            arr[k] = R[j]; 
+	            j += 1; 
+	        } 
+	        k += 1; 
+
+	        if (i>=n1) {
+	        	break;
+	        }
+
+	        if (j>=n2) {
+	        	break;
+	        }
+
+	    } 
+	  
+	    for i=i, n1 { 
+	        arr[k] = L[i]; 
+	        i += 1; 
+	        k += 1; 
+	    } 
+	  
+	    for j=j, n2 { 
+	        arr[k] = R[j]; 
+	        j += 1; 
+	        k += 1; 
+	    } 
+	} 
+	  
+	void mergeSort(int arr[], int l, int r) 
+	{ 
+	    int m;
+	    if (l < r) 
+	    { 
+	        // Same as (l+r)/2, but avoids overflow for 
+	        // large l and h 
+	        m = l+(r-l)/2; 
+	  
+	        // Sort first and second halves 
+	        mergeSort(arr, l, m); 
+	        mergeSort(arr, m+1, r); 
+	  
+	        merge(arr, l, m, r); 
+	    } 
+	    
+	} 
+	  
+	void main() 
+	{ 
+	    arr[] = {12, 11, 13, 5, 6, 7}; 
+	    int arr_size, i; 
+	    arr_size = 6;
+	    mergeSort(arr, 0, arr_size - 1); 
+	    
+	    for i=0, arr_size {
+			callout("printf","%d",arr[i]);
+		}
+
+		return 0; 
+	} 
+
+}
+
+ 

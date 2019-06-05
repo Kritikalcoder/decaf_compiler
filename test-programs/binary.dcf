@@ -1,0 +1,46 @@
+class Program {
+	int arr[100], count, key, result, low, high;
+
+	int binarySearch(int l, int r, int x) 
+	{ 
+		int mid;
+	   	if (r >= l) 
+	   	{ 
+	        mid = l + (r - l)/2;  
+	        if (arr[mid] == x)  {
+	        	return mid;
+	        } 
+
+	        if (arr[mid] > x)  {
+	            return binarySearch(l, mid-1, x); 
+	        }
+
+	        return binarySearch(mid+1, r, x); 
+	   	} 
+	   
+	   	return -1; 
+	}
+
+	void main() {
+
+		int i;
+		count = 4;
+		for i = 0, count - 1 {
+			arr[i] = callout("read_input");
+		}
+		key = 5;
+		low = 0;
+		high = count - 1;
+
+		result = binarySearch(low, high, key);
+
+		if (result == -1) {
+			callout("printf","Not found\n");
+		}
+		else {
+			callout("printf","%d",result);
+		}
+
+	}
+
+}

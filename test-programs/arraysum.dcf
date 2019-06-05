@@ -1,0 +1,24 @@
+class Program {
+	int A[10];
+	int size;
+
+	int arraySum () {
+		int sum;
+		sum = 0;
+
+		for i = 0, size {
+			sum += A[i];
+		}
+		return sum;
+	}
+	void main () {
+		int result;
+		size = 4;
+		for i = 0, size {
+			A[i] = i;
+		}
+		
+		result = arraySum();
+		callout("printf", "%d", result);
+	}
+}

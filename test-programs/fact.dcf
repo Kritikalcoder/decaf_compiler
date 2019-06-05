@@ -1,0 +1,16 @@
+class Program {
+	int num, fact, i;
+
+	void main() {
+
+		num = 10;
+		fact = num;
+
+		for i = 1, num {
+			fact = fact * i;
+		}
+
+		callout("printf","%d",fact);
+	}
+
+}

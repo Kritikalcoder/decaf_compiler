@@ -1,0 +1,51 @@
+class Program {
+	int arr[100];
+	  
+	int partition (int arr[], int low, int high) 
+	{ 
+	    int pivot = arr[high];     
+	    int i,j;
+	    int temp;
+	    
+	    i = (low - 1);
+	    j = low;
+	  
+	    for j = low, high { 
+	        if (arr[j] <= pivot) 
+	        { 
+	            i += 1;    
+	            temp = arr[i];
+	            arr[i] = arr[j];
+	            arr[j] = temp;
+	        } 
+	    }  
+	    temp = arr[i+1];
+	    arr[i+1] = arr[high];
+	    arr[high] = temp;
+	    return (i + 1); 
+	} 
+	  
+	void quickSort(int arr[], int low, int high) 
+	{ 
+	    int pi;
+	    if (low < high) 
+	    { 
+	        pi = partition(arr, low, high); 
+	        quickSort(arr, low, pi - 1); 
+	        quickSort(arr, pi + 1, high); 
+	    } 
+	} 
+
+	void main() 
+	{ 
+	    arr[] = {10, 7, 8, 9, 1, 5}; 
+	    int n, i; 
+	    n = 6;
+	    quickSort(arr, 0, n-1); 
+	    for i=0, n {
+			callout("printf","%d",arr[i]);
+		}
+	    return 0; 
+	} 
+
+}

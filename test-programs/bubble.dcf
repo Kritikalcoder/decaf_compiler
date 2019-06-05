@@ -1,0 +1,27 @@
+class Program {
+	int arr[100], count, temp, i, j;
+
+	void main() {
+
+		count = 4;
+		for i = 0, count - 1 {
+			arr[i] = callout("read_input");
+		}
+
+		for i = 0, count - 1 {
+			for j = 0, count - i - 1 {
+				if(arr[j] > arr[j+1]) {
+					temp = arr[j];
+					arr[j] = arr[j+1];
+					arr[j+1] = temp;
+				}
+
+			}
+		}
+
+		for i=0, count {
+			callout("printf","%d",arr[i]);
+		}
+	}
+
+}

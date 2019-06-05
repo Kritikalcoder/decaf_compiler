@@ -1,0 +1,260 @@
+%{
+#include <bits/stdc++.h>	
+#include "ast.h"
+#include "parser.tab.hpp"
+  void yyerror(char* s);
+  extern int yylex();
+  extern int yyparse();
+  extern FILE *yyin;
+  extern "C" int lineno;
+  extern union ASTNode yylval;
+  class Program* start = NULL; 
+  int error_count=0;
+%}
+%start program
+
+%token CALLOUT
+%token <value> TYPE VOID 
+%token CLASS
+%token IF ELSE FOR 
+%token RETURN BREAK CONTINUE
+%token COMMA SEMICOLON
+%token <value> BOOL_LIT
+%token <value> CHAR_LIT STRING_LIT ID
+%token <number> INT_LIT
+%token OPEN_CB CLOSE_CB OPEN_SB CLOSE_SB OPEN_P CLOSE_P
+%token <value> AND OR NOT
+%token <value> PLUS MINUS MULT DIV MOD
+%token <value> LESS GREAT LESSE GREATE
+%token <value> EQ NEQ
+%token <value> ASSIGN PLUSEQ MINUSEQ
+
+%left EQ NEQ
+%left AND OR
+%left LESS GREAT LESSE GREATE
+%left PLUS MINUS
+%left MULT DIV MOD
+%nonassoc NOT
+
+%type <prog> program
+
+%type <fields> field_decl_list
+%type <field_decl> field_decl
+%type <field_decl_var_list> field_decl_var_list
+%type <field_decl_var> field_decl_var
+
+%type <methods> method_decl_list
+%type <method_decl> method_decl
+%type <method_arg_list> method_arg_list
+%type <method_arg_list> method_arg
+
+%type <block> block
+
+%type <var_decl_list> var_decl_list
+%type <var_decl> var_decl
+%type <var_list> var_list
+%type <statement_list> statement_list
+%type <statement> statement
+
+%type <value> assign_op
+%type <loc> location
+%type <expr> expr
+%type <lit> literal
+
+%type <method_call> method_call
+%type <method_call_arg_list> method_call_arg_list
+%type <method_call_arg_list> method_call_arg
+%type <callout_arg_list> callout_arg_list
+%type <callout_arg> callout_arg
+
+%%
+program :   CLASS ID OPEN_CB field_decl_list method_decl_list CLOSE_CB { 
+		$$ = new Program(string($2), $4, $5);
+		start = $$; 
+	}
+	;
+
+field_decl_list : { $$ = new Field_decl_list(); }
+	|	field_decl_list field_decl {
+		$1->append($2);
+		$$ = $1;
+	}
+	;
+
+field_decl :	TYPE field_decl_var_list SEMICOLON { $$ = new Field_decl(string($1), $2); }
+	;
+
+field_decl_var_list :	field_decl_var {
+		$$ = new Field_decl_var_list();
+		$$->append($1);
+	}
+	|	field_decl_var COMMA field_decl_var_list {
+		$3->append($1);
+		$$ = $3;
+	}
+	;
+
+field_decl_var :	ID { $$ = new Field_decl_var(string($1), string("var")); }
+	|	ID OPEN_SB INT_LIT CLOSE_SB { $$ = new Field_decl_var(string($1), string("array"), $3); }
+	;
+
+method_decl_list : { $$ = new Method_decl_list(); }
+	|	method_decl method_decl_list {
+		$2->append($1);
+		$$ = $2;
+	}	
+	;
+
+method_decl :	TYPE ID OPEN_P method_arg_list CLOSE_P block { $$ = new Method_decl(string($1), string($2), $4, $6); }
+	|			VOID ID OPEN_P method_arg_list CLOSE_P block { $$ = new Method_decl(string($1), string($2), $4, $6); }
+	;
+
+method_arg_list :	{ $$ = new Method_arg_list(); }
+	|	TYPE ID method_arg {
+		Method_arg *arg = new Method_arg(string($1), string($2));
+		$3->append(arg);
+		$$ = $3;
+	}
+	;
+
+method_arg : { $$ = new Method_arg_list(); }
+	|	COMMA TYPE ID method_arg {
+		Method_arg *arg = new Method_arg(string($2), string($3));
+		$4->append(arg);
+		$$ = $4;
+	}
+	;
+
+block :	OPEN_CB var_decl_list statement_list CLOSE_CB { $$ = new Block($2, $3); }
+	;
+
+var_decl_list :	{ $$ = new Variable_decl_list(); }
+	|	var_decl_list var_decl {
+		$1->append($2);
+		$$ = $1;
+	}
+	;
+
+var_decl :	TYPE var_list SEMICOLON { $$ = new Variable_decl(string($1), $2); }
+	;
+
+var_list :	ID { $$ = new Variable_list(string($1)); }
+	|	var_list COMMA ID {
+		$1->append(string($3));
+		$$ = $1;
+	}
+	;
+
+statement_list :	{ $$ = new Statement_list(); }
+	|	statement_list statement {
+		$1->append($2);
+		$$ = $1;
+	}
+	;
+
+statement :	location assign_op expr SEMICOLON { $$ = new Assign_statement($1, string($2), $3); }
+	|	method_call SEMICOLON { $$ = $1; }
+	|	IF OPEN_P expr CLOSE_P block { $$ = new If_statement($3, $5); }
+	|	IF OPEN_P expr CLOSE_P block ELSE block { $$ = new If_else_statement($3, $5, $7); }
+	|	FOR ID ASSIGN expr COMMA expr block { $$ = new For_statement(string($2), $4, $6, $7); }
+	|	RETURN SEMICOLON { $$ = new Return_statement(); }
+	| 	RETURN expr SEMICOLON { $$ = new Return_statement($2); }
+	|	BREAK SEMICOLON { $$ = new Break_statement(); }
+	|	CONTINUE SEMICOLON { $$ = new Continue_statement(); }
+	|	block { $$ = $1; }
+	;
+
+assign_op :	ASSIGN { $$ = $1; }
+	|	PLUSEQ { $$ = $1; }
+	|	MINUSEQ { $$ = $1; }
+	;
+
+method_call : ID OPEN_P method_call_arg_list CLOSE_P { $$ = new Normal_call(string($1), $3); }
+	|	CALLOUT OPEN_P STRING_LIT callout_arg_list CLOSE_P { $$ = new Callout_call(string($3), $4); }
+	;
+
+method_call_arg_list :	{ $$ = new Method_call_arg_list(); }
+	|	expr method_call_arg {
+		$2->append($1);
+		$$ = $2;
+	}
+	;
+
+method_call_arg :	{ $$ = new Method_call_arg_list(); }
+	|	COMMA expr method_call_arg {
+		$3->append($2);
+		$$ = $3;
+	}
+	;
+
+callout_arg_list :	{ $$ = new Callout_arg_list();  }
+	|	COMMA callout_arg callout_arg_list {
+		$3->append($2);
+		$$ = $3;
+	}
+	;
+
+callout_arg : expr { $$ = new Callout_arg($1); }
+	|	STRING_LIT { $$ = new Callout_arg(string($1)); }
+	;
+
+location :	ID { $$ = new Location(string($1), string("var")); }
+	|	ID OPEN_SB expr CLOSE_SB { $$ = new Location(string($1), string("array"), $3);  }
+	;
+	
+expr :	location { $$ = $1; }
+	|	method_call { $$ = $1; }
+	|	literal { $$ = $1; }
+	| 	expr PLUS expr { $$ = new Binary_expr($1, string($2), $3); }
+	| 	expr MINUS expr { $$ = new Binary_expr($1, string($2), $3); }
+	| 	expr MULT expr { $$ = new Binary_expr($1, string($2), $3); }
+	| 	expr DIV expr { $$ = new Binary_expr($1, string($2), $3); }
+	| 	expr MOD expr { $$ = new Binary_expr($1, string($2), $3); }
+	| 	expr LESS expr { $$ = new Binary_expr($1, string($2), $3); }
+	| 	expr GREAT expr { $$ = new Binary_expr($1, string($2), $3); }
+	| 	expr LESSE expr { $$ = new Binary_expr($1, string($2), $3); }
+	| 	expr GREATE expr { $$ = new Binary_expr($1, string($2), $3); }
+	| 	expr EQ expr{ $$ = new Binary_expr($1, string($2), $3); }
+	| 	expr NEQ expr { $$ = new Binary_expr($1, string($2), $3); }
+	| 	expr OR expr { $$ = new Binary_expr($1, string($2), $3); }
+	| 	expr AND expr { $$ = new Binary_expr($1, string($2), $3); }
+	|	MINUS expr { $$ = new Unary_expr(string($1), $2); }
+	|	NOT	expr { $$ = new Unary_expr(string($1), $2); }
+	|	OPEN_P expr CLOSE_P { $$ = $2; }
+	;
+
+literal :	INT_LIT {$$ = new Int_literal($1);}
+	|	CHAR_LIT {$$ = new Char_literal(string($1));}
+	|	BOOL_LIT {$$ = new Bool_literal(string($1));}
+	;
+%%
+
+int main(int argc, char **argv)
+{
+	FILE *input = fopen(argv[1], "r");
+
+	if (input == NULL){
+		printf("Can't open file\n");
+		exit(-1);
+	}
+	yyin = input;
+	do {
+		yyparse();
+	} while (!feof(yyin));
+
+	// printf("Parsing done");
+	if(start) {
+    /* code generation */
+		// cout << "Generating code" << endl;
+		start->generate_IR();
+	}
+	if (error_count == 0) {
+		start->generate_code_dump();
+	}
+	// printf("Parsing Over\n");
+}
+
+void yyerror(char *s)
+{
+	fprintf(stderr, "error: %s\n", s);
+}
